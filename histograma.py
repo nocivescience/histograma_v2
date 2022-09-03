@@ -2,11 +2,15 @@ from manim import *
 class ShowDistributionOfScores(Scene):
     CONFIG = {
         "axes_config": {
-            "x_range":[-1,10,1.2],
+            "x_range":[-1,3,1.2],
             "y_range":[0,100,0.065],
             "y_axis_config": {
                 "include_tip": False,
+                "include_numbers":False,
             },
+            'x_axis_config':{
+                'include_tip':False
+            }
         },
         "random_seed": 1,
     }
@@ -34,42 +38,6 @@ class ShowDistributionOfScores(Scene):
         )
         self.add(bars)
 
-        # Add score label
-        score_label = VGroup(
-            Text("Last score: "),
-            Integer(1)
-        )
-        score_label.scale(1.5)
-        score_label.arrange(RIGHT)
-        score_label[1].align_to(score_label[0][0][-1], DOWN)
-
-        score_label[1].add_updater(
-            lambda m: m.set_value(scores[get_index() - 1])
-        )
-        score_label[1].add_updater(
-            lambda m: m.set_fill(bars[scores[get_index() - 1]].get_fill_color())
-        )
-
-        n_trials_label = VGroup(
-            Text("\\# Games: "),
-            Integer(0),
-        )
-        n_trials_label.scale(1.5)
-        n_trials_label.arrange(RIGHT, aligned_edge=UP)
-        n_trials_label[1].add_updater(
-            lambda m: m.set_value(get_index())
-        )
-
-        n_trials_label.to_corner(UR, buff=LARGE_BUFF)
-        score_label.next_to(
-            n_trials_label, DOWN,
-            buff=LARGE_BUFF,
-            aligned_edge=LEFT,
-        )
-
-        self.add(score_label)
-        self.add(n_trials_label)
-
         # Add curr_score_arrow
         curr_score_arrow = Arrow(0.25 * UP, ORIGIN, buff=0)
         curr_score_arrow.set_stroke(WHITE, 5)
@@ -79,48 +47,48 @@ class ShowDistributionOfScores(Scene):
         self.add(curr_score_arrow)
 
         # Add mean bar
-        mean_line = DashedLine(ORIGIN, 4 * UP)
-        mean_line.set_stroke(YELLOW, 2)
+        # mean_line = DashedLine(ORIGIN, 4 * UP)
+        # mean_line.set_stroke(YELLOW, 2)
 
-        def get_mean():
-            return np.mean(scores[:get_index()])
+        # def get_mean():
+        #     return np.mean(scores[:get_index()])
 
-        mean_line.add_updater(
-            lambda m: m.move_to(axes.c2p(get_mean(), 0), DOWN)
-        )
-        mean_label = VGroup(
-            Text("Mean = "),
-            DecimalNumber(num_decimal_places=3),
-        )
-        mean_label.arrange(RIGHT)
-        mean_label.match_color(mean_line)
-        mean_label.add_updater(lambda m: m.next_to(mean_line, UP, SMALL_BUFF))
-        mean_label[1].add_updater(lambda m: m.set_value(get_mean()))
+        # mean_line.add_updater(
+        #     lambda m: m.move_to(axes.c2p(get_mean(), 0), DOWN)
+        # )
+        # mean_label = VGroup(
+        #     Text("Mean = "),
+        #     DecimalNumber(num_decimal_places=3),
+        # )
+        # mean_label.arrange(RIGHT)
+        # mean_label.match_color(mean_line)
+        # mean_label.add_updater(lambda m: m.next_to(mean_line, UP, SMALL_BUFF))
+        # mean_label[1].add_updater(lambda m: m.set_value(get_mean()))
 
-        # Show many runs
-        index_tracker.set_value(1)
-        for value in [10, 100, 1000, 10000]:
-            anims = [
-                ApplyMethod(
-                    index_tracker.set_value, value,
-                    rate_func=linear,
-                    run_time=5,
-                ),
-            ]
-            if value == 10:
-                anims.append(
-                    FadeIn(
-                        VGroup(mean_line, mean_label),
-                        rate_func=squish_rate_func(smooth, 0.5, 1),
-                        run_time=2,
-                    ),
-                )
-            self.play(*anims)
-        self.wait()
+        # # Show many runs
+        # index_tracker.set_value(1)
+        # for value in [10, 100, 1000, 10000]:
+        #     anims = [
+        #         ApplyMethod(
+        #             index_tracker.set_value, value,
+        #             rate_func=linear,
+        #             run_time=5,
+        #         ),
+        #     ]
+        #     if value == 10:
+        #         anims.append(
+        #             FadeIn(
+        #                 VGroup(mean_line, mean_label),
+        #                 rate_func=squish_rate_func(smooth, 0.5, 1),
+        #                 run_time=2,
+        #             ),
+        #         )
+        #     self.play(*anims)
+        # self.wait()
 
     #
     def get_axes(self):
-        axes = Axes(**self.CONFIG['axes_config'])
+        axes = Axes(x_range=self.CONFIG['axes_config']['x_range'], y_range=self.CONFIG['axes_config']['y_range'], y_axis_config=self.CONFIG['axes_config']['y_axis_config'])
         axes.to_corner(DL)
 
         axes.x_axis.add_numbers(*[range(1, 12)])
@@ -171,13 +139,9 @@ class ShowDistributionOfScores(Scene):
             )
 
     def get_random_score(self):
-        score = 1
-        radius = 1
-        while True:
-            point = np.random.uniform(-1, 1, size=2)
-            hit_radius = np.linalg.norm(point)
-            if hit_radius > radius:
-                return score
-            else:
-                score += 1
-                radius = np.sqrt(radius**2 - hit_radius**2)
+        random_number=np.random.random()
+        if random_number>.75:
+            score=1
+        else:
+            score=2
+        return score
